@@ -1,0 +1,11 @@
+apiVersion: v2
+type: application
+name: kyverno-notation-venafi
+version: v1-rc.1
+appVersion: latest
+description: Kyverno extension service for Notation and the venafi signer
+keywords:
+  - kubernetes
+  - nirmata
+  - venafi signer
+  - notation

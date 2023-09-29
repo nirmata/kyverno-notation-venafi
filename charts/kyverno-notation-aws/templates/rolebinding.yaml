@@ -1,0 +1,13 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ template "kyverno-notation-venafi.roleName" . }}binding
+  namespace: {{ template "kyverno-notation-venafi.namespace" . }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ template "kyverno-notation-venafi.roleName" . }}
+subjects:
+- kind: ServiceAccount
+  name: {{ template "kyverno-notation-venafi.serviceAccountName" . }}
+  namespace: {{ template "kyverno-notation-venafi.namespace" . }}

@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "kyverno-notation-venafi.serviceName" . }}
+  namespace: {{ template "kyverno-notation-venafi.namespace" . }}
+  labels:
+    {{- include "kyverno-notation-venafi.labels" . | nindent 4 }}
+spec:
+  ports:
+  - port: 443
+    name: https
+    protocol: TCP
+    targetPort: 9443
+  selector:
+    {{- include "kyverno-notation-venafi.matchLabels.common" . | nindent 4 }}

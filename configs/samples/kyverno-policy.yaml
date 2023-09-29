@@ -1,0 +1,57 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: check-images     
+spec:
+  validationFailureAction: Enforce
+  failurePolicy: Fail
+  webhookTimeoutSeconds: 30
+  schemaValidation: false
+  rules:
+  - name: call-venafi-signer-extension
+    match:
+      any:
+      - resources:
+          namespaces:
+          - test-notation
+          kinds:
+          - Pod
+          operations:
+            - CREATE
+            - UPDATE
+    context:
+    - name: tlscerts
+      apiCall:
+        urlPath: "/api/v1/namespaces/kyverno-notation-venafi/secrets/svc.kyverno-notation-venafi.svc.tls-pair"
+        jmesPath: "base64_decode( data.\"tls.crt\" )"
+    - name: response
+      apiCall:
+        method: POST
+        data:
+        - key: images
+          value: "{{images}}"
+        - key: trustPolicy
+          value: "tp-{{request.namespace}}"
+        - key: metadata
+          value: "{{ request.object.metadata.annotations.\"kyverno-notation-venafi.io/verify-images\" || '' }}"
+        - key: attestations
+          value: 
+          - imageReference: "*"
+            type: 
+            - name: sbom/example
+              conditions:
+                all:
+                - key: \{{creationInfo.licenseListVersion}}
+                  operator: Equals
+                  value: "3.17"
+                  message: invalid license version
+        service:
+          url: https://svc.kyverno-notation-venafi/checkimages
+          caBundle: '{{ tlscerts }}'
+    mutate:
+      foreach:
+      - list: "response.results"
+        patchesJson6902: |-
+            - path: '{{ element.path }}'
+              op: '{{ element.op }}'
+              value: '{{ element.value }}'

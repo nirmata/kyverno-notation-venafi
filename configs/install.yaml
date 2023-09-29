@@ -1,0 +1,229 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kyverno-notation-venafi
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: kyverno-notation-venafi
+  namespace: kyverno-notation-venafi
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: kyverno-notation-venafi-clusterrole
+rules:
+- apiGroups:
+  - notation.nirmata.io
+  resources:
+  - trustpolicies
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - notation.nirmata.io
+  resources:
+  - trustpolicies/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - notation.nirmata.io
+  resources:
+  - truststores
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - notation.nirmata.io
+  resources:
+  - truststores/finalizers
+  verbs:
+  - update
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: kyverno-notation-venafi-clusterrolebinding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: kyverno-notation-venafi-clusterrole
+subjects:
+- kind: ServiceAccount
+  name: kyverno-notation-venafi
+  namespace: kyverno-notation-venafi
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: kyverno-notation-venafi-token-review-clusterrolebinding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: system:auth-delegator
+subjects:
+- kind: ServiceAccount
+  name: kyverno-notation-venafi
+  namespace: kyverno-notation-venafi
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: kyverno-notation-venafi-role
+  namespace: kyverno-notation-venafi
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - "secrets"
+  - "configmaps"
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - delete
+- apiGroups:
+  - coordination.k8s.io
+  resources:
+  - leases
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - delete
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: kyverno-notation-venafi-rolebinding
+  namespace: kyverno-notation-venafi
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: kyverno-notation-venafi-role
+subjects:
+- kind: ServiceAccount
+  name: kyverno-notation-venafi
+  namespace: kyverno-notation-venafi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: kyverno-notation-venafi
+  name: kyverno-notation-venafi
+  namespace: kyverno-notation-venafi
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: kyverno-notation-venafi
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: kyverno-notation-venafi
+    spec:
+      terminationGracePeriodSeconds: 5
+      securityContext:
+        runAsNonRoot: true
+      containers:
+      - image: ghcr.io/nirmata/kyverno-notation-venafi:latest
+        imagePullPolicy: Always
+        name: kyverno-notation-venafi
+        args:
+        # NOTATION DEBUGGING
+        - --debug
+
+        # CACHING
+        - --cacheEnabled
+        - --cacheMaxSize=2000
+        - --cacheTTLDurationSeconds=7200
+
+        # USE IF IRSA IS NOT CONFIGURED
+        # - --imagePullSecrets=regcred
+        resources:
+          limits:
+            memory: 512Mi
+          requests:
+            memory: 32Mi
+            cpu: 100m
+        securityContext:
+          runAsUser: 2000
+          runAsGroup: 3000
+          allowPrivilegeEscalation: false
+          seccompProfile:
+            type: RuntimeDefault
+          capabilities:
+            drop:
+              - ALL
+        env:
+        - name: NOTATION_DIR
+          value: /notation
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace  
+        - name: SERVICE_NAME
+          value: svc
+        - name: DEPLOYMENT_NAME
+          value: kyverno-notation-venafi
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: DEFAULT_TRUST_POLICY
+          value: venafi-signer-trust-policy
+        volumeMounts:
+          - name: notation
+            mountPath: /notation
+      volumes:
+        - name: notation
+          emptyDir: {}
+      serviceAccountName: kyverno-notation-venafi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: kyverno-notation-venafi
+  name: svc
+  namespace: kyverno-notation-venafi
+spec:
+  ports:
+  - port: 443
+    name: https
+    protocol: TCP
+    targetPort: 9443
+  selector:
+    app: kyverno-notation-venafi
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: notation-plugin-config
+  namespace: kyverno-notation-venafi
+data:
+  debug: "false"
