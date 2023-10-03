@@ -9,10 +9,11 @@ COPY . ./
 # Get Signer plugin binary
 RUN apk add git
 RUN apk add make
+RUN apk add tree
 RUN git clone https://github.com/venafi/notation-venafi-csp.git notation-venafi-csp-repo
 RUN cd notation-venafi-csp-repo
 RUN make build
-RUN ls bin
+RUN tree .
 RUN mv ./bin/notation-venafi-csp ../notation-venafi-csp
 RUN cd ..
 RUN rm -rf notation-venafi-csp-repo
