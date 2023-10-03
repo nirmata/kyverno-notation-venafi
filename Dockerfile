@@ -10,8 +10,9 @@ COPY . ./
 RUN apk add git
 RUN apk add make
 RUN apk add tree
-RUN git clone https://github.com/venafi/notation-venafi-csp.git notation-venafi-csp-repo
+RUN mkdir notation-venafi-csp-repo
 RUN cd notation-venafi-csp-repo
+RUN git clone https://github.com/venafi/notation-venafi-csp.git
 RUN make build
 RUN tree .
 RUN mv ./bin/notation-venafi-csp ../notation-venafi-csp
