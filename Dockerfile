@@ -12,7 +12,7 @@ RUN apk add make
 RUN git clone https://github.com/venafi/notation-venafi-csp.git notation-venafi-csp-repo
 RUN cd notation-venafi-csp-repo
 RUN make build
-RUN ls
+RUN ls bin
 RUN mv ./bin/notation-venafi-csp ../notation-venafi-csp
 RUN cd ..
 RUN rm -rf notation-venafi-csp-repo
