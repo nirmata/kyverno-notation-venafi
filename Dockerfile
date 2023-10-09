@@ -10,9 +10,8 @@ COPY . ./
 RUN apk add git
 RUN apk add make
 RUN apk add tree
-RUN mkdir notation-venafi-csp-repo
+RUN git clone https://github.com/venafi/notation-venafi-csp.git notation-venafi-csp-repo
 RUN cd notation-venafi-csp-repo
-RUN git clone https://github.com/venafi/notation-venafi-csp.git
 RUN git fetch --all --tags
 RUN git checkout tags/v0.2.0-beta 
 # RUN git checkout tags/$(git describe --tags $(git rev-list --tags --max-count=1))
