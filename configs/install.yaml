@@ -195,7 +195,7 @@ spec:
             fieldRef:
               fieldPath: metadata.name
         - name: DEFAULT_TRUST_POLICY
-          value: venafi-signer-trust-policy
+          value: tp-venafi-test-notation
         volumeMounts:
           - name: notation
             mountPath: /notation

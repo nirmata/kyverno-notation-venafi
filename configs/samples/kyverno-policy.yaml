@@ -1,7 +1,7 @@
 apiVersion: kyverno.io/v1
 kind: ClusterPolicy
 metadata:
-  name: check-images     
+  name: check-venafi     
 spec:
   validationFailureAction: Enforce
   failurePolicy: Fail
@@ -13,7 +13,7 @@ spec:
       any:
       - resources:
           namespaces:
-          - test-notation
+          - test-venafi
           kinds:
           - Pod
           operations:
@@ -31,20 +31,20 @@ spec:
         - key: images
           value: "{{images}}"
         - key: trustPolicy
-          value: "tp-{{request.namespace}}"
-        - key: metadata
-          value: "{{ request.object.metadata.annotations.\"kyverno-notation-venafi.io/verify-images\" || '' }}"
-        - key: attestations
-          value: 
-          - imageReference: "*"
-            type: 
-            - name: sbom/example
-              conditions:
-                all:
-                - key: \{{creationInfo.licenseListVersion}}
-                  operator: Equals
-                  value: "3.17"
-                  message: invalid license version
+          value: "tp-venafi-test-notation"
+        # - key: metadata
+        #   value: "{{ request.object.metadata.annotations.\"kyverno-notation-venafi.io/verify-images\" || '' }}"
+        # - key: attestations
+        #   value: 
+        #   - imageReference: "*"
+        #     type: 
+        #     - name: sbom/example
+        #       conditions:
+        #         all:
+        #         - key: \{{creationInfo.licenseListVersion}}
+        #           operator: Equals
+        #           value: "3.17"
+        #           message: invalid license version
         service:
           url: https://svc.kyverno-notation-venafi/checkimages
           caBundle: '{{ tlscerts }}'
