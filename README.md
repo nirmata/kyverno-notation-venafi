@@ -5,6 +5,7 @@ A [Kyverno](https://kyverno.io) extension service that executes the [notation-ve
 [![Go Report Card](https://goreportcard.com/badge/github.com/nirmata/kyverno-notation-venafi)](https://goreportcard.com/report/github.com/nirmata/kyverno-notation-venafi)
 ![License: Apache-2.0](https://img.shields.io/github/license/kyverno/kyverno?color=blue)
 
+![logo](img/kyverno-notation-venafi.png)
 
 # Features
 
