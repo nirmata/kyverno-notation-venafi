@@ -2,8 +2,6 @@ module github.com/nirmata/kyverno-notation-venafi
 
 go 1.21
 
-toolchain go1.21.1
-
 require (
 	github.com/go-logr/logr v1.2.4
 	github.com/go-logr/zapr v1.2.4
