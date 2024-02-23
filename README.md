@@ -55,7 +55,7 @@ mutate:
 
 In addition to verifying signatures, the extension service can verify signed metadata i.e. [attestations](https://nirmata.com/2022/03/15/a-map-for-kubernetes-supply-chain-security/).
 
-To verify attestatons, the Kyverno policy can optionally pass a variable called `attestations` in the request:
+To verify attestations, the Kyverno policy can optionally pass a variable called `attestations` in the request:
 
 ```yaml
 - key: attestations
@@ -101,15 +101,15 @@ In the  example above we are verifying the following:
 
 To prevent repeated lookups for verified images, the Nirmata extension has a built-in cache.
 
-Caching is enabled by default and can be managed using the `--cacheEnabled` flag. The cache is a TTL based cache, i.e, entries expire automatically after sometime and the value of TTL can be customized using `--cacheTTLDurationSeconds` (default is 3600) and max number of entries in the cache can be configured using `--cacheMaxSize` (default is 1000).
+Caching is enabled by default and can be managed using the `--cacheEnabled` flag. The cache is a TTL based cache, i.e, entries expire automatically after some time and the value of TTL can be customized using `--cacheTTLDurationSeconds` (default is 3600) and max number of entries in the cache can be configured using `--cacheMaxSize` (default is 1000).
 
 The cache stores the verification outcomes of images for the trust policy and verification outcomes of attestations with the trust policy and conditions. The cache is an in-memory cache which gets cleared when the pod is recreated. Cache will also be cleared when there is any change in trust policies and trust stores.
 
-## Multi Tenancy
+## Multi-Tenancy
 
 In a shared cluster, each team may have different signatures and trust policies. To support such use cases, the extension allows configuring multiple [trust policies](https://github.com/notaryproject/specifications/blob/main/specs/trust-store-trust-policy.md#trust-policy) and [trust stores](https://github.com/notaryproject/specifications/blob/main/specs/trust-store-trust-policy.md#trust-store) as Kubernetes custom resources.
 
-The extension service allows specifying what trust policy they want to use for verification thus enabling multi tenancy. Mutliple teams can share one cluster and have different trust policies seperate from each other.
+The extension service allows specifying what trust policy they want to use for verification thus enabling multi-tenancy. Multiple teams can share one cluster and have different trust policies separate from each other.
 To specify the trust policy to use, we can pass the `trustPolicy` variable in the request.
 ```yaml
  - key: trustPolicy
@@ -127,7 +127,7 @@ Multiple replicas configured for the plugin can be used for both availability an
 
 1. Install [notation-venafi-csp](https://github.com/Venafi/notation-venafi-csp/tree/main#installation) plugin using the installation guide.
    
-2. Setup an environment inside a venafi project to use it for signing and verification.
+2. Set up an environment inside a venafi project to use it for signing and verification.
 
 3. Get the access key to access your environment.
 ```sh
@@ -147,7 +147,7 @@ tpp_url=
 access_token=
 tpp_project=${PROJECT}\\${ENVIRONMENT}
 ```
-5. Add the key to notation cli.
+5. Add the key to notation CLI.
 
 ```sh
 notation key add --default "vsign-rsa2048-cert" --plugin venafi-csp --id "vsign-rsa2048-cert" --plugin-config "config"="/path/to/vsign/config.ini"
