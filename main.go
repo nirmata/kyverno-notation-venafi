@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"sync"
 	"syscall"
 	"time"
@@ -59,6 +60,8 @@ func main() {
 		cacheMaxSize                int64
 		cacheTTLDuration            int64
 		reviewKyvernoToken          bool
+		kyvernoNamespace            string
+		allowedUsers                string
 	)
 
 	flag.BoolVar(&flagLocal, "local", false, "Use local system notation configuration")
@@ -76,8 +79,9 @@ func main() {
 	flag.BoolVar(&cacheEnabled, "cacheEnabled", true, "Whether to use a TTL cache for storing verified images, default is true")
 	flag.Int64Var(&cacheMaxSize, "cacheMaxSize", 1000, "Max size limit for the TTL cache, default is 1000.")
 	flag.Int64Var(&cacheTTLDuration, "cacheTTLDurationSeconds", int64(1*time.Hour), "Max TTL value for a cache in seconds, default is 1 hour.")
-	flag.BoolVar(&reviewKyvernoToken, "reviewKyvernoToken", true, "Checks if the Auth token in the request is a token from kyverno admission controller, default is true")
-
+	flag.BoolVar(&reviewKyvernoToken, "reviewKyvernoToken", true, "Checks if the Auth token in the request is a token from kyverno controllers or other allowed users, default is true.")
+	flag.StringVar(&kyvernoNamespace, "kyvernoNamespace", "kyverno", "Namespace where kyverno is installed, default is kyverno.")
+	flag.StringVar(&allowedUsers, "allowedUsers", "", "Comma-seperated list of all the allowed users and service accounts.")
 	flag.Parse()
 	zc := zap.NewDevelopmentConfig()
 	zc.Level = zap.NewAtomicLevelAt(zapcore.Level(-2))
@@ -195,7 +199,9 @@ func main() {
 		knvVerifier.WithTokenReviewEnabled(reviewKyvernoToken),
 		knvVerifier.WithCacheEnabled(cacheEnabled),
 		knvVerifier.WithMaxCacheSize(cacheMaxSize),
-		knvVerifier.WithMaxCacheTTL(time.Duration(cacheTTLDuration*int64(time.Second))))
+		knvVerifier.WithMaxCacheTTL(time.Duration(cacheTTLDuration*int64(time.Second))),
+		knvVerifier.WithKyvernoNamespace(kyvernoNamespace),
+		knvVerifier.WithAllowedUsers(strings.Split(allowedUsers, ",")))
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/checkimages", verifier.HandleCheckImages)
