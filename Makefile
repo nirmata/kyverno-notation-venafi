@@ -90,7 +90,7 @@ code-cov-report: test-clean ## Generate code coverage report
 CMD_DIR           := cmd
 KYVERNO_DIR       := $(CMD_DIR)/kyverno
 IMAGE_TAG_SHA     := $(GIT_SHA)
-IMAGE_TAG_LATEST  := latest
+IMAGE_TAG         ?= latest
 PACKAGE           ?= github.com/nirmata/kyverno-notation-venafi
 ifdef VERSION
 LD_FLAGS          := "-s -w -X $(PACKAGE)/pkg/version.BuildVersion=$(VERSION)"
@@ -101,22 +101,23 @@ endif
 build:
 	go build -o kyverno-notation-venafi
 
+
 #################
 # BUILD (DOCKER)#
 #################
 
 docker-build:
 	@echo Build kyverno-notation-venafi image with docker... >&2
-	GOOS=$(GOOS) GOARCH=$(GOARCH) CGO_ENABLED=0 LD_FLAGS=$(LD_FLAGS) go build -o kyverno-notation-venafi .
-	docker buildx build --platform linux/arm64/v8 -t $(REPO_IMAGE):$(IMAGE_TAG_LATEST) --load .
+	docker buildx build -t $(REPO_IMAGE):$(IMAGE_TAG) . --load
 
 docker-publish:
 	@echo Build kyverno-notation-venafi image with docker... >&2
-	GOOS=$(GOOS) GOARCH=$(GOARCH) CGO_ENABLED=0 LD_FLAGS=$(LD_FLAGS) go build -o kyverno-notation-venafi .
-	docker buildx build --platform linux/arm64/v8 -t $(REPO_IMAGE):$(IMAGE_TAG_LATEST) --load .
-	docker tag $(REPO_IMAGE):$(IMAGE_TAG_LATEST) $(REPO_IMAGE):$(IMAGE_TAG_SHA)
-	docker push $(REPO_IMAGE):$(IMAGE_TAG_SHA)
-	docker push $(REPO_IMAGE):$(IMAGE_TAG_LATEST)
+	docker buildx create --name multiarch --driver docker-container --use
+	docker buildx build --platform linux/amd64,linux/arm64 -t $(REPO_IMAGE):$(IMAGE_TAG) --push .
+	docker buildx rm multiarch
+
+t:
+	@echo $(IMAGE_TAG)
 
 ########
 # HELM #
