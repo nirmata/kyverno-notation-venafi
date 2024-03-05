@@ -220,7 +220,7 @@ pod/test created (server dry run)
 Attempt to run an unsigned image:
 
 ```sh
-kubectl -n test-notation run test --image=ghcr.io/nirmata/kyverno-notation-venafi-demo:unsigned --dry-run=server
+kubectl -n test-venafi run test --image=ghcr.io/nirmata/kyverno-notation-venafi-demo:unsigned --dry-run=server
 ```
 Output
 ```sh
